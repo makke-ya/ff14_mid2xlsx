@@ -1,0 +1,15 @@
+*.xlsx
+*.xlsx#
+*.jpg
+*.spec
+*.mid
+
+.vscode/
+__pycache__/
+out/
+test/
+old/
+release/
+
+build/
+dist/
