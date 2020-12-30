@@ -190,7 +190,7 @@ DICT_FOR_PROGRAM = {
     ("Gunshot",	"銃声"): 127,
 }
 DICT_FOR_PROGRAM_onlyFF14 = {
-    # Ver. Patch5.1x
+    # Ver. Patch5.4
     ("Orchestral Harp",	"ハープ"): (46, 60),
     ("Acoustic Piano",	"アコースティックピアノ", "グランドピアノ"): (0, 72),
     ("Acoustic Guitar (steel)",	"アコースティックギター（スチール弦）", "スチールギター"): (25, 48),
@@ -215,6 +215,11 @@ DICT_FOR_PROGRAM_onlyFF14 = {
     ("French horn",	"フレンチ・ホルン", "ホルン"): (60, 48),
     ("Alto Sax",	"アルトサックス", "サックス"): (65, 60),
     # ("Soprano Sax",	"ソプラノサックス"): 64,
+
+    ("Violin",	"ヴァイオリン"): (40, 60),
+    ("Viola",	"ヴィオラ"): (41, 60),
+    ("Cello",	"チェロ"): (42, 48),
+    ("Double bass",	"コントラバス"): (43, 36),
 }
 DICT_FOR_QUANTIZED_UNIT_TIMES = {
     (3, 48): 30,  # 64分音符
@@ -231,70 +236,117 @@ DICT_FOR_QUANTIZED_UNIT_TIMES = {
     (48, 48): 480,  # 4部音符
 }
 
+# KEY_PITCH_MARGIN_DICT = {
+#     # 注意：順序関係を保持しないと正確に処理できません。
+#     #       Python3.6以下の場合はcollection.OrderedDictを使ってください
+#     # key: (start_pitch_idx, pitch_margin_list)
+#     "C-dur":       (0, [0, 0, 0, 0, 0, 0, 0]),
+#     "a-moll":      (5, [0, 0, 0, 0, 0, 0, 0]),
+#     "G-dur":       (4, [0, 0, 0, 0, 0, 0, 1]),
+#     "e-moll":      (2, [0, 1, 0, 0, 0, 0, 0]),
+#     "D-dur":       (1, [0, 0, 1, 0, 0, 0, 1]),
+#     "h-moll":      (6, [0, 1, 0, 0, 1, 0, 0]),
+#     "A-dur":       (5, [0, 0, 1, 0, 0, 1, 1]),
+#     "fis-moll":    (3, [1, 1, 0, 0, 1, 0, 0]),
+#     "E-dur":       (2, [0, 1, 1, 0, 0, 1, 1]),
+#     "cis-moll":    (0, [1, 1, 0, 1, 1, 0, 0]),
+#     "H/Ces-dur":   (6, [0, 1, 1, 0, 1, 1, 1]),
+#     "gis/as-moll": (4, [1, 1, 0, 1, 1, 0, 1]),
+#     "Fis/Ges-dur": (3, [1, 1, 1, 0, 1, 1, 1]),
+#     "dis/es-moll": (1, [1, 1, 1, 1, 1, 0, 1]),
+#     "Des/Cis-dur": (1, [-1, -1, 0, -1, -1, -1, 0]),
+#     "b/ais-moll":  (6, [-1, 0, -1, -1, 0, -1, -1]),
+#     "As-dur":      (5, [-1, -1, 0, -1, -1, 0, 0]),
+#     "f-moll":      (3, [0, 0, -1, -1, 0, -1, -1]),
+#     "Es-dur":      (2, [-1, 0, 0, -1, -1, 0, 0]),
+#     "c-moll":      (0, [0, 0, -1, 0, 0, -1, -1]),
+#     "B-dur":       (6, [-1, 0, 0, -1, 0, 0, 0]),
+#     "g-moll":      (4, [0, 0, -1, 0, 0, -1, 0]),
+#     "F-dur":       (3, [0, 0, 0, -1, 0, 0, 0]),
+#     "d-moll":      (1, [0, 0, 0, 0, 0, -1, 0]),
+#     "FF14":        (0, [1, 0, -1, 1, 1, 0, -1]),
+# }
+DUR_PITCH_MARGINS = [0, -1, 0, -1, 0, 0, 1, 0, -1, 0, -1, 0]
+MOLL_PITCH_MARGINS = [0, -1, 0,  0, 1, 0, 1, 0,  0, 1,  0, 1]
 KEY_PITCH_MARGIN_DICT = {
     # 注意：順序関係を保持しないと正確に処理できません。
     #       Python3.6以下の場合はcollection.OrderedDictを使ってください
     # key: (start_pitch_idx, pitch_margin_list)
-    "C-dur":       (0, [0, 0, 0, 0, 0, 0, 0]),
-    "A-moll":      (5, [0, 0, 0, 0, 0, 0, 0]),
-    "G-dur":       (4, [0, 0, 0, 0, 0, 0, 1]),
-    "E-moll":      (2, [0, 1, 0, 0, 0, 0, 0]),
-    "D-dur":       (1, [0, 0, 1, 0, 0, 0, 1]),
-    "H-moll":      (6, [0, 1, 0, 0, 1, 0, 0]),
-    "A-dur":       (5, [0, 0, 1, 0, 0, 1, 1]),
-    "Fis-moll":    (3, [1, 1, 0, 0, 1, 0, 0]),
-    "E-dur":       (2, [0, 1, 1, 0, 0, 1, 1]),
-    "Cis-moll":    (0, [1, 1, 0, 1, 1, 0, 0]),
-    "H/Ces-dur":   (6, [0, 1, 1, 0, 1, 1, 1]),
-    "Gis/As-moll": (4, [1, 1, 0, 1, 1, 0, 1]),
-    "Fis/Ges-dur": (3, [1, 1, 1, 0, 1, 1, 1]),
-    "Dis/Es-moll": (1, [1, 1, 1, 1, 1, 0, 1]),
-    "Des/Cis-dur": (1, [-1, -1, 0, -1, -1, -1, 0]),
-    "B/Ais-moll":  (6, [-1, 0, -1, -1, 0, -1, -1]),
-    "As-dur":      (5, [-1, -1, 0, -1, -1, 0, 0]),
-    "F-moll":      (3, [0, 0, -1, -1, 0, -1, -1]),
-    "Es-dur":      (2, [-1, 0, 0, -1, -1, 0, 0]),
-    "C-moll":      (0, [0, 0, -1, 0, 0, -1, -1]),
-    "B-dur":       (6, [-1, 0, 0, -1, 0, 0, 0]),
-    "G-moll":      (4, [0, 0, -1, 0, 0, -1, 0]),
-    "F-dur":       (3, [0, 0, 0, -1, 0, 0, 0]),
-    "D-moll":      (1, [0, 0, 0, 0, 0, -1, 0]),
-    "FF14":        (0, [1, 0, -1, 1, 1, 0, -1]),
+    # 
+    # dur : -, o-Ⅱ, -, oⅴⅤ9, -, -, ⅴⅤ, -, oⅡoroⅤ9, -, ?(-1にしてある), -
+    # moll: -, -Ⅱ, -, -, ?(+1にしてある), -, ⅴⅤ, -, -, ⅴⅤ, -, Ⅴ
+    "C-dur":       (0,  DUR_PITCH_MARGINS),
+    "a-moll":      (9,  MOLL_PITCH_MARGINS),
+    "G-dur":       (7,  DUR_PITCH_MARGINS),
+    "e-moll":      (4,  MOLL_PITCH_MARGINS), 
+    "D-dur":       (2,  DUR_PITCH_MARGINS),
+    "h-moll":      (11, MOLL_PITCH_MARGINS),
+    "A-dur":       (9,  DUR_PITCH_MARGINS),
+    "fis-moll":    (6,  MOLL_PITCH_MARGINS),
+    "E-dur":       (4,  DUR_PITCH_MARGINS),
+    "cis-moll":    (1,  MOLL_PITCH_MARGINS),
+    "H/Ces-dur":   (11, DUR_PITCH_MARGINS),
+    "gis/as-moll": (8,  MOLL_PITCH_MARGINS),
+    "Fis/Ges-dur": (6,  DUR_PITCH_MARGINS),
+    "dis/es-moll": (3,  MOLL_PITCH_MARGINS),
+    "Des/Cis-dur": (1,  DUR_PITCH_MARGINS),
+    "b/ais-moll":  (10, MOLL_PITCH_MARGINS),
+    "As-dur":      (8,  DUR_PITCH_MARGINS),
+    "f-moll":      (5,  MOLL_PITCH_MARGINS),
+    "Es-dur":      (3,  DUR_PITCH_MARGINS),
+    "c-moll":      (0,  MOLL_PITCH_MARGINS),
+    "B-dur":       (10, DUR_PITCH_MARGINS),
+    "g-moll":      (7,  MOLL_PITCH_MARGINS),
+    "F-dur":       (5,  DUR_PITCH_MARGINS),
+    "d-moll":      (2,  MOLL_PITCH_MARGINS),
+    "FF14":        (0,  [0, 1, 0, -1, 0, 0, 1, 0, 1, 0, -1, 0])
 }
 KEY_NAME_LIST = [
     "C-dur",
-    "A-moll",
+    "a-moll",
     "G-dur",
-    "E-moll",
+    "e-moll",
     "D-dur",
-    "H-moll",
+    "h-moll",
     "A-dur",
-    "Fis-moll",
+    "fis-moll",
     "E-dur",
-    "Cis-moll",
+    "cis-moll",
     "H/Ces-dur",
-    "Gis/As-moll",
+    "gis/as-moll",
     "Fis/Ges-dur",
-    "Dis/Es-moll",
+    "dis/es-moll",
     "Des/Cis-dur",
-    "B/Ais-moll",
+    "b/ais-moll",
     "As-dur",
-    "F-moll",
+    "f-moll",
     "Es-dur",
-    "C-moll",
+    "c-moll",
     "B-dur",
-    "G-moll",
+    "g-moll",
     "F-dur",
-    "D-moll",
+    "d-moll",
     "FF14",
 ]
-DEFAULT_PITCH_LIST = [0, 2, 4, 5, 7, 9, 11]
+# DEFAULT_PITCH_LIST = [0, 2, 4, 5, 7, 9, 11]
+DEFAULT_PITCH_LIST = [i for i in range(0, 12)]
+# KEY_PITCH_DICT = {
+#     key: [
+#         DEFAULT_PITCH_LIST[(start_pitch_idx + i) % 7] + pitch_margin
+#         for i, pitch_margin in enumerate(pitch_margin_list)
+#     ] for key, (start_pitch_idx, pitch_margin_list) in KEY_PITCH_MARGIN_DICT.items()
+# }
 KEY_PITCH_DICT = {
     key: [
-        DEFAULT_PITCH_LIST[(start_pitch_idx + i) % 7] + pitch_margin
-        for i, pitch_margin in enumerate(pitch_margin_list)
+        DEFAULT_PITCH_LIST[(start_pitch_idx + i) % 12] for i in range(0, 12)
     ] for key, (start_pitch_idx, pitch_margin_list) in KEY_PITCH_MARGIN_DICT.items()
 }
+
+STYLE_NAME_LIST = [
+    "1行固定",
+    "3行固定",
+    "フレキシブル"
+]
 
 KEY_NOTE_NAME_DICT = {}
 for idx, (key, pitches) in enumerate(KEY_PITCH_DICT.items()):

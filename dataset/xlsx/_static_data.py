@@ -30,7 +30,7 @@ DICT_FOR_CONVERT_GERMAN2JAPAN = {
     "E": "ミ",
     "Eis": "ミ♯",
     "Fes": "ﾌｧ♭",
-    "F": "ファ",
+    "F": "ﾌｧ",
     "Fis": "ﾌｧ♯",
     "Ges": "ソ♭",
     "G": "ソ",

@@ -110,38 +110,40 @@ class CommonSoundData(object):
         if self.flatten_pitches is None:
             self._flatten()
 
+        return None
+
         # とりあえずnoteの多さだけで計算
-        note_list = self.note_list if self.note_list is not None else self.pitch_list
-        sum_beats = 0
-        max_note_num = 0
-        for notes_in_measure in note_list:
-            all_rest = True
-            note_num = 0
-            for notes_in_beat in notes_in_measure:
-                for notes in notes_in_beat:
-                    if notes != "r":
-                        all_rest = False
-                        if notes != "-":
-                            note_num += len(notes)
-            if all_rest:
-                continue
-            sum_beats += len(notes_in_measure)
-            if note_num > max_note_num:
-                max_note_num = note_num
-                max_notes = notes_in_measure
+        # note_list = self.note_list if self.note_list is not None else self.pitch_list
+        # sum_beats = 0
+        # max_note_num = 0
+        # for notes_in_measure in note_list:
+        #     all_rest = True
+        #     note_num = 0
+        #     for notes_in_beat in notes_in_measure:
+        #         for notes in notes_in_beat:
+        #             if notes != "r":
+        #                 all_rest = False
+        #                 if notes != "-":
+        #                     note_num += len(notes)
+        #     if all_rest:
+        #         continue
+        #     sum_beats += len(notes_in_measure)
+        #     if note_num > max_note_num:
+        #         max_note_num = note_num
+        #         max_notes = notes_in_measure
 
-        flatten_note_num = len(self.flatten_pitches)
-        average_note_num = (flatten_note_num / sum_beats)
-        tempo_difficulty = tempo / 80.0
+        # flatten_note_num = len(self.flatten_pitches)
+        # average_note_num = (flatten_note_num / sum_beats)
+        # tempo_difficulty = tempo / 80.0
 
-        # (平均の一小節の音数 + 最大の一小節の音数) * テンポの高さ * バイアス
-        difficulty = (
-            (
-                (average_note_num * tempo_difficulty * 0.5) +
-                (max_note_num * tempo_difficulty * 2.0)
-            ) * bias
-        )
-        return "{:.1f}".format(difficulty)
+        # # (平均の一小節の音数 + 最大の一小節の音数) * テンポの高さ * バイアス
+        # difficulty = (
+        #     (
+        #         (average_note_num * tempo_difficulty * 0.5) +
+        #         (max_note_num * tempo_difficulty * 2.0)
+        #     ) * bias
+        # )
+        # return "{:.1f}".format(difficulty)
 
     def _create_dummy_rates(self):
         """
@@ -250,16 +252,17 @@ class CommonSoundData(object):
             return None
         octave_str = DICT_FOR_OCTAVE[octave]
         print(key_pitches, pitch, _pitch, octave)
-        try:
-            key_note = key_notes[key_pitches.index(_pitch)]
-        except ValueError:
-            key_note = None
-        print(pitch, bef_pitch)
-        if key_note is None:
-            if (bef_pitch is None or bef_pitch <= pitch):
-                key_note = DICT_FOR_NOTE_CONVERT[_pitch][0]  # 上がり傾向の時は＃
-            elif bef_pitch > pitch:
-                key_note = DICT_FOR_NOTE_CONVERT[_pitch][1]  # 下がり傾向の時は♭
+        key_note = key_notes[key_pitches.index(_pitch)]
+        # try:
+        #     key_note = key_notes[key_pitches.index(_pitch)]
+        # except ValueError:
+        #     key_note = None
+        # print(pitch, bef_pitch)
+        # if key_note is None:
+        #     if (bef_pitch is None or bef_pitch <= pitch):
+        #         key_note = DICT_FOR_NOTE_CONVERT[_pitch][0]  # 上がり傾向の時は＃
+        #     elif bef_pitch > pitch:
+        #         key_note = DICT_FOR_NOTE_CONVERT[_pitch][1]  # 下がり傾向の時は♭
         return key_note + octave_str
 
     def convert_pitch2note(self, enable_chord=False):

@@ -2,7 +2,9 @@
 from os import makedirs
 
 from dataset.midi.loader import MidiLoader
-from dataset.xlsx.writer import XlsxWriter, ThreeLineXlsxWriter
+from dataset.xlsx.writer import XlsxWriter
+from dataset.xlsx.writer import ThreeLineXlsxWriter
+from dataset.xlsx.writer import FlexibleLineXlsxWriter
 
 
 class Mid2XlsxConverter(object):
@@ -86,10 +88,11 @@ class Mid2XlsxConverter(object):
                 ])
         return ret_dict
     
-    def update(self, program_dict, key_dict, pitch_dict, drum_modes=[], enable_chord=False):
+    def update(self, program_dict, key_dict, pitch_dict, drum_modes=[], style="1行固定"):
         _program_dict = {}
         _key_dict = {}
         _pitch_dict = {}
+        enable_chord = True if style != "1行固定" else False
         self.common_data_list = self.midi_data.get_common_data_list(
             drum_modes=drum_modes
         )
@@ -137,8 +140,8 @@ class Mid2XlsxConverter(object):
         return _program_dict, _key_dict, _pitch_dict
         
     def fwrite(
-        self, filename, title_name, on_list=None, enable_chord=False,
-        start_measure_num=1, num_measures_in_system=4,
+        self, filename, title_name, on_list=None, style="1行固定", shorten=False,
+        start_measure_num=1, num_measures_in_system=4, score_width=29.76
     ):
         _common_data_list = []
         if on_list is not None:
@@ -152,22 +155,20 @@ class Mid2XlsxConverter(object):
 
         # エクセル化する
         title = title_name if title_name != "" else "test"
-        if enable_chord is False:
-            self.xlsx_data = XlsxWriter(
-                tempo=self.midi_data.tempo,
-                title=title,
-                start_measure_num=start_measure_num - 1,  # この回数だけ小節を消すため1は0に
-                num_measures_in_system=num_measures_in_system,
-                score_width=29.76,
-            )
+        if style == "1行固定":
+            writer = XlsxWriter
+        elif style == "3行固定":
+            writer = ThreeLineXlsxWriter
         else:
-            self.xlsx_data = ThreeLineXlsxWriter(
-                tempo=self.midi_data.tempo,
-                title=title,
-                start_measure_num=start_measure_num - 1,  # この回数だけ小節を消すため1は0に
-                num_measures_in_system=num_measures_in_system,
-                score_width=42,
-            )
+            writer = FlexibleLineXlsxWriter
+        self.xlsx_data = writer(
+            tempo=self.midi_data.tempo,
+            title=title,
+            start_measure_num=start_measure_num - 1,  # この回数だけ小節を消すため1は0に
+            num_measures_in_system=num_measures_in_system,
+            score_width=score_width,
+            shorten=shorten,
+        )
         self.xlsx_data.add_common_data_list(_common_data_list)
         self.xlsx_data.fwrite(filename)
 
@@ -186,9 +187,9 @@ if __name__ == "__main__":
     pitch_dict = converter.pitch_estimate()
 
     drum_modes = ["スネアドラム", "シンバル"]
-    enable_chord = True
+    style = 0
     program_dict, key_dict, pitch_dict = converter.update(
-        program_dict, key_dict, pitch_dict, drum_modes, enable_chord
+        program_dict, key_dict, pitch_dict, drum_modes, style
     )
 
     on_list = list(program_dict.keys())

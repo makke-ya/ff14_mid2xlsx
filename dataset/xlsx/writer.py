@@ -11,7 +11,7 @@ from .base import XlsxIOBase
 from ._static_data import (
     DICT_FOR_CONVERT_GERMAN2JAPAN,
     DICT_FOR_CONVERT_GERMAN2JAPAN_SHORTEN,
-    DICT_FOR_OCTAVE,
+    DICT_FOR_OCTAVE
 )
 
 
@@ -35,6 +35,7 @@ class XlsxWriter(XlsxIOBase):
         header_width=2.7,
         title_width=8.0,
         color_width=1.35,
+        shorten=False,
         rest_color="ff999999",
         octave0_color="ffc9daf8",
         octave1_color="fffff2cc",
@@ -73,6 +74,8 @@ class XlsxWriter(XlsxIOBase):
             タイトルのセル横幅, by default 8.0
         color_width : float, optional
             楽譜右上に描写する音の高さの最低セル横幅, by default 1.35
+        shorten : bool, optional
+            音名を半角にするかどうか, by default False
         rest_color : str, optional
             休符の色, by default "ff999999"
         octave0_color : str, optional
@@ -103,6 +106,7 @@ class XlsxWriter(XlsxIOBase):
         self.header_width = self._convert_cm2width(header_width)
         self.title_width = self._convert_cm2width(title_width)
         self.color_width = self._convert_cm2width(color_width)
+        self.shorten = shorten
         self._initial_setting(self.ws)
         t = "solid"
         self.rest_color_fill = PatternFill(
@@ -275,11 +279,12 @@ class XlsxWriter(XlsxIOBase):
                         width_dict = self._get_cell_widths(
                             self.ws, now_column, now_column + cells_per_notes - 1
                         )
-                        shorten = (
-                            True
-                            if sum(width_dict.values()) < self.shorten_width
-                            else False
-                        )
+                        # shorten = (
+                        #     True
+                        #     if sum(width_dict.values()) < self.shorten_width
+                        #     else False
+                        # )
+                        shorten = self.shorten
                         print("width", width_dict)
                         # 音をプロット
                         bef_sound = self._plot_sound(
@@ -357,6 +362,7 @@ class XlsxWriter(XlsxIOBase):
         self._plot_cell(now_row, now_col, val=str(self.tempo), border=border)
         self._plot_cell(now_row, width_list[idx - 1][0], border=border)
         idx = self._get_next_width_idx(width_list, idx, self.color_width)
+        print("WIDTH_LIST", idx, width_list)
         now_col = width_list[idx][0]
         color_start_idx = idx
 
@@ -794,11 +800,12 @@ class ThreeLineXlsxWriter(XlsxWriter):
                         width_dict = self._get_cell_widths(
                             self.ws, now_column, now_column + cells_per_notes - 1
                         )
-                        shorten = (
-                            True
-                            if sum(width_dict.values()) < self.shorten_width
-                            else False
-                        )
+                        shorten = self.shorten
+                        # shorten = (
+                        #     True
+                        #     if sum(width_dict.values()) < self.shorten_width
+                        #     else False
+                        # )
                         print("width", width_dict)
                         # 音をプロット
                         bef_sound = self._plot_sound(
@@ -937,6 +944,191 @@ class ThreeLineXlsxWriter(XlsxWriter):
             sheet.row_dimensions[row].height = self._convert_cm2width(
                 self.score_height
             )
+
+
+class FlexibleLineXlsxWriter(ThreeLineXlsxWriter):
+    def add_common_data(
+        self, common_data, note_list, num_cells_map, borders_map,
+        start_row, start_column=3
+    ):
+        print("note_list", note_list)
+        print("num_cells_map", num_cells_map)
+        print("borders_map", borders_map)
+        now_row = start_row
+        sum_cells = sum(num_cells_map[0])
+        bef_sound = [None, None]
+        mark_idx = 1
+        now_measure = 1
+        for system_idx, notes_in_system in enumerate(
+            chunked(note_list, self.num_measures_in_system)
+        ):
+            num_rows = max([1] + [
+                len(notes)
+                for notes_in_measure in notes_in_system
+                for notes_in_beat in notes_in_measure
+                for notes in notes_in_beat if type(notes) is list
+            ])
+            print("system_idx", system_idx)
+            print("num_rows", num_rows)
+            num_cells_in_system = num_cells_map[system_idx]
+            borders_in_system = borders_map[system_idx]
+            beat_idx = 0
+            now_column = start_column
+            # 小節番号をかく
+            now_measure = self._plot_measure_nums(
+                now_row,
+                now_column + 1,
+                num_cells_in_system,
+                borders_in_system,
+                now_measure,
+            )
+            now_row += 1
+            # マーカーを書く
+            mark_idx = self._plot_marks(
+                [now_row, now_row + num_rows - 1],
+                [now_column, now_column + sum_cells + 1],
+                mark_idx
+            )
+            self._adjust_cell_height(now_row, now_row + num_rows)
+            now_column += 1
+            for notes_in_measure in notes_in_system:
+                merge_cell_nums = []
+                bef_sound_in_measure = None
+                bef_has_note = True
+                for j, notes_in_beat in enumerate(notes_in_measure):
+                    num_cells = num_cells_in_system[beat_idx]
+                    borders = borders_in_system[beat_idx]
+                    print("row, column", now_row, now_column)
+                    print("yes", notes_in_beat, num_cells, borders)
+                    cells_per_notes = num_cells // len(notes_in_beat)
+                    self._plot_beat_border(
+                        now_row,
+                        now_column,
+                        now_row + num_rows - 1,
+                        now_column + num_cells - 1,
+                        borders,
+                    )
+                    has_note = False
+                    for i, notes in enumerate(notes_in_beat):
+                        if i == 0 and j != 0 and j != len(notes_in_measure) // 2:
+                            continue
+                        if type(notes) != str:
+                            has_note = True
+                            break
+                    for notes in notes_in_beat:
+                        if has_note is True and type(notes) != str and len(notes) != 0:
+                            merge_cell_nums.append(
+                                [(now_row, now_column), (now_row + num_rows - 1, now_column)]
+                            )
+                            bef_sound_in_measure = notes
+                        elif (
+                            has_note is True
+                            and bef_has_note is True
+                            and notes == "-"
+                            and bef_sound_in_measure is not None
+                        ):
+                            merge_cell_nums[-1][1] = (
+                                now_row + num_rows - 1,
+                                now_column + cells_per_notes - 1,
+                            )
+                        elif notes == "r":
+                            bef_sound_in_measure = None
+
+                        # 結合セル
+                        for _row in range(now_row, now_row + num_rows):
+                            self._merge_cells(
+                                _row,
+                                now_column,
+                                _row,
+                                now_column + cells_per_notes - 1,
+                            )
+                        width_dict = self._get_cell_widths(
+                            self.ws, now_column, now_column + cells_per_notes - 1
+                        )
+                        shorten = self.shorten
+                        # shorten = (
+                        #     True
+                        #     if sum(width_dict.values()) < self.shorten_width
+                        #     else False
+                        # )
+                        # 音をプロット
+                        bef_sound = self._plot_sound(
+                            now_row, now_column, notes, bef_sound, num_rows, shorten
+                        )
+                        now_column += cells_per_notes
+                    bef_has_note = has_note
+                    beat_idx += 1
+                # 伸ばすセルは結合（拍を超えていても結合、小節を挟んだ場合は結合しない）
+                # if len(merge_cell_nums) > 1:
+                #     for (_row1, _col1), (_row2, _col2) in merge_cell_nums:
+                #         for _row in range(_row1, _row2 + 1):
+                #             self._merge_cells(_row, _col1, _row, _col2)
+            now_row += num_rows
+        # 奏者、楽器を書く
+        self._plot_player_and_instrument(
+            start_row,
+            now_row,
+            start_column,
+            player_idx=common_data.get_player_idx(),
+            instrument_name=common_data.get_program_str(),
+            difficulty=common_data.get_difficulty(self.tempo)
+        )
+        return now_row
+
+    def _plot_beat_border(
+        self, start_row, start_column, end_row, end_column, thick_flag
+    ):
+        for row in range(start_row, end_row + 1):
+            start_cell_str = self._convert_cell_num(row, start_column)
+            end_cell_str = self._convert_cell_num(row, end_column)
+            print(start_row, start_column, "{}:{}".format(start_cell_str, end_cell_str))
+            for row_cells in self.ws["{}:{}".format(start_cell_str, end_cell_str)]:
+                for idx, cell in enumerate(row_cells):
+                    border = Border()
+                    if row == start_row:
+                        border.top = self.medium_side
+                    else:
+                        border.top = self.thin_side
+                    if row == end_row:
+                        border.bottom = self.medium_side
+                    else:
+                        border.bottom = self.thin_side
+                    if idx == 0 and thick_flag[0] == 1:
+                        border.left = self.thin_side
+                    elif idx == 0 and thick_flag[0] == 2:
+                        border.left = self.medium_side
+                    if idx == len(row_cells) - 1 and thick_flag[1] == 1:
+                        border.right = self.thin_side
+                    elif idx == len(row_cells) - 1 and thick_flag[1] == 2:
+                        border.right = self.medium_side
+                    cell.border = border
+
+    def _plot_sound(self, row, column, notes, bef_sound, num_rows=1, shorten=False):
+        # まずは休符を書く
+        for _row in range(row, row + num_rows):
+            self._plot_cell(_row, column, fill=self.rest_color_fill)
+
+        if notes == "r":
+            bef_sound = [None, None]
+        elif notes == "-":
+            if bef_sound[1] is not None:
+                self._plot_cell(
+                    row, column, fill=self.octave_color_fill[bef_sound[1]]
+                )
+        else:
+            for num_note, note in enumerate(notes[::-1]):
+                split_note = note.split("_")
+                octave = 1 if len(split_note) == 1 else DICT_FOR_OCTAVE[split_note[1]]
+                fill = self.octave_color_fill[octave]
+                if shorten is False:
+                    scale = DICT_FOR_CONVERT_GERMAN2JAPAN[split_note[0]]
+                else:
+                    scale = DICT_FOR_CONVERT_GERMAN2JAPAN_SHORTEN[split_note[0]]
+                if num_note == 0:
+                    bef_sound = [scale, octave]
+                self._plot_cell(
+                    row + num_note, column, scale, self.note_font, fill=fill)
+        return bef_sound
 
 
 def lcm(a, b):

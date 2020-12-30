@@ -12,6 +12,7 @@ from xlsx2mid import Xlsx2MidConverter
 from dataset._static_data import (
     DICT_FOR_PROGRAM_onlyFF14,
     KEY_NAME_LIST,
+    STYLE_NAME_LIST,
 )
 
 # グローバル変数
@@ -120,7 +121,7 @@ class RightFrame(FrameBase):
         # 通知リスト
         self.msg_list = tk.Listbox(self.mgrid_frm)
         # self.msg_list = tk.Listbox(self)
-        self.msg_list.configure(width=65, height=46)
+        self.msg_list.configure(width=65, height=50)
         self.msg_list.grid(row=0, column=0, sticky="nwes")
 
         # Scrollbar(縦)
@@ -189,7 +190,8 @@ class LeftFrame(FrameBase):
         self.key = 0
         self.key_dict = {1: "C-dur"}
         self.pitch_dict = {0: [0, 0]}
-        self.enable_chord = False
+        self.style = 0
+        self.shorten = False
 
     def input_state_on(self):
         self.midi_path = None
@@ -292,12 +294,12 @@ class LeftFrame(FrameBase):
                     on_dict[channel_num].append([program_idx, 0])
         return on_dict
 
-    def _update(self, program_dict, key_dict, pitch_dict, drum_modes, enable_chord):
+    def _update(self, program_dict, key_dict, pitch_dict, drum_modes, style, shorten):
         self.add_msg("更新中...")
         print(self.program_dict)
         try:
             _program_dict, key_dict, pitch_dict = self.m2x_converter.update(
-                program_dict, key_dict, pitch_dict, drum_modes, enable_chord
+                program_dict, key_dict, pitch_dict, drum_modes, style
             )
             key = key_dict[1]
             self.run_state_on()
@@ -328,12 +330,13 @@ class LeftFrame(FrameBase):
             self.key = key
             self.key_dict = key_dict
             self.pitch_dict = pitch_dict
-            self.enable_chord = enable_chord
+            self.style = style
             self.program_dict = program_dict
+            self.shorten = shorten
 
     def _fwrite(
         self, filename, title_name=None, again_cvt=False,
-        start_measure_num=1, num_measures_in_system=4,
+        start_measure_num=1, num_measures_in_system=4, score_width=29.76,
     ):
         self.conf_frm.update()
         self.add_msg("変換中...")
@@ -343,9 +346,11 @@ class LeftFrame(FrameBase):
             xlsx_name = filename + ".xlsx"
             self.m2x_converter.fwrite(
                 xlsx_name, title_name, on_list,
-                enable_chord=self.enable_chord,
+                style=self.style,
+                shorten=self.shorten,
                 start_measure_num=start_measure_num,
                 num_measures_in_system=num_measures_in_system,
+                score_width=score_width,
             )
             self.master.add_msg("変換完了")
             self.master.add_msg("    Xlsx: {}".format(xlsx_name))
@@ -407,10 +412,11 @@ class InputFrame(LabelFrameBase):
     def midi_add(self):
         f_conf = [("Midi File", ("mid",))]
         path = tkfd.askopenfile(filetypes=f_conf)
-        self.master.input_state_off(path.name)
-        self.midi_list.insert("", "end", values=path.name)
-        self.master.conf_state_on()
-        self.master.add_msg("MIDIファイルをセットしました")
+        if path is not None:
+            self.master.input_state_off(path.name)
+            self.midi_list.insert("", "end", values=path.name)
+            self.master.conf_state_on()
+            self.master.add_msg("MIDIファイルをセットしました")
 
     def midi_reset(self):
         self.master.run_state_off()
@@ -438,13 +444,13 @@ class ConfFrame(LabelFrameBase):
         self.kgrid_frm.configure(bg=self.bg)
         self.kgrid_frm.pack(padx=3, pady=8, fill="x")
 
-        # 調
+        # 記譜の調
         self.key_lbl = tk.Label(self.kgrid_frm)
-        self.key_lbl.configure(text="調", bg=self.bg, font=("MS Gothic", 9))
-        self.key_lbl.grid(row=0, column=0, sticky="nw")
+        self.key_lbl.configure(text="記譜の調", bg=self.bg, font=("MS Gothic", 9))
+        self.key_lbl.grid(row=0, column=0, sticky="nw", padx=(2, 0))
         self.key_combo = ttk.Combobox(self.kgrid_frm)
         self.key_combo.configure(
-            width=12,
+            width=16,
             state="disabled",
             value=tuple(KEY_NAME_LIST),
             font=("MS Gothic", 9),
@@ -452,27 +458,65 @@ class ConfFrame(LabelFrameBase):
         self.key_combo.current(0)
         self.key_combo.grid(row=1, column=0, sticky="w", padx=(18, 0))
 
-        # 和音
+        # 和音の記譜法
         self.chord_lbl = tk.Label(self.kgrid_frm)
         self.chord_lbl.configure(
-            text="和音", bg=self.bg, font=("MS Gothic", 9),
+            text="記譜法", bg=self.bg, font=("MS Gothic", 9),
         )
         self.chord_lbl.grid(padx=(10, 0), row=0, column=1, sticky="nw")
-        self.cchkbox_var = tk.BooleanVar()
-        self.cchkbox = tk.Checkbutton(self.kgrid_frm)
-        self.cchkbox.configure(
-            text="有効化（出力が3行スタイルになります）",
-            variable=self.cchkbox_var,
+        self.style_combo = ttk.Combobox(self.kgrid_frm)
+        self.style_combo.configure(
+            width=16,
+            state="disabled",
+            value=tuple(STYLE_NAME_LIST),
+            font=("MS Gothic", 9),
+        )
+        self.style_combo.current(0)
+        self.style_combo.grid(padx=(25, 0), row=1, column=1, sticky="w")
+
+        # 音名
+        self.shorten_lbl = tk.Label(self.kgrid_frm)
+        self.shorten_lbl.configure(
+            text="音名", bg=self.bg, font=("MS Gothic", 9),
+        )
+        self.shorten_lbl.grid(padx=(10, 0), row=0, column=2, sticky="nw")
+        self.shorten_chkbox_var = tk.BooleanVar()
+        self.shorten_chkbox = tk.Checkbutton(self.kgrid_frm)
+        self.shorten_chkbox.configure(
+            width=12,
+            text="半角化",
+            variable=self.shorten_chkbox_var,
             state="disabled",
             bg=self.bg,
             font=("MS Gothic", 9),
         )
-        self.cchkbox.grid(padx=(25, 0), row=1, column=1, sticky="w")
+        self.shorten_chkbox.grid(padx=(3, 0), row=1, column=2, sticky="w")
+
+        # アドバンスド設定のフレーム
+        self.advanced_settings_frm = tk.Frame(self)
+        self.advanced_settings_frm.configure(bg=self.bg)
+        self.advanced_settings_frm.pack(padx=5, pady=3)
+
+        # 変換開始小節数
+        self.advanced_setting_lbl = tk.Label(self.advanced_settings_frm)
+        self.advanced_setting_lbl.configure(
+            bg=self.bg, text="アドバンスド設定",
+            font=("ms gothic", 9),
+        )
+        self.advanced_setting_lbl.grid(row=0, column=0, sticky="w")
+        self.advanced_setting_frm = tk.Frame(self.advanced_settings_frm)
+        self.advanced_setting_frm.configure(bg=self.bg)
+        self.advanced_setting_frm.grid(row=1, column=0, sticky="w", padx=18)
+        self.advanced_setting_ent = tk.Entry(self.advanced_setting_frm)
+        self.advanced_setting_ent.configure(width=57)
+        self.advanced_setting_ent.insert(0, "")
+        self.advanced_setting_ent.configure(state="disabled")
+        self.advanced_setting_ent.pack(side="left")
 
         # グリッド用のFrame
         self.grid_frm = tk.Frame(self)
         self.grid_frm.configure(bg=self.bg)
-        self.grid_frm.pack(padx=3, pady=3, fill="x")
+        self.grid_frm.pack(padx=3, pady=5, fill="x")
 
         # 表のタイトルをつける
         self.nondrum_lbl = tk.Label(self.grid_frm)
@@ -598,6 +642,9 @@ class ConfFrame(LabelFrameBase):
         print("ON_DICT:", on_dict)
         self.key_combo.configure(state="readonly")
         self.key_combo.current(key_idx)
+        self.style_combo.configure(state="readonly")
+        self.shorten_chkbox.configure(state="normal")
+        self.shorten_chkbox_var.set(False)
         for i in range(16):
             if i == 9 or i not in on_dict.keys():
                 continue
@@ -615,11 +662,15 @@ class ConfFrame(LabelFrameBase):
                 self.drum_combo_list[i].current(0)
         self.estimate_btn.configure(state="normal")
         self.update_btn.configure(state="normal")
-        self.cchkbox.configure(state="normal")
+        self.advanced_setting_ent.configure(state="normal")
 
     def state_off(self):
         self.key_combo.configure(state="disabled")
         self.key_combo.current(0)
+        self.style_combo.configure(state="disabled")
+        self.style_combo.current(0)
+        self.shorten_chkbox.configure(state="disabled")
+        self.shorten_chkbox_var.set(False)
         for i in range(16):
             if i == 9:
                 continue
@@ -636,8 +687,7 @@ class ConfFrame(LabelFrameBase):
             self.drum_combo_list[i].current(0)
         self.estimate_btn.configure(state="disabled")
         self.update_btn.configure(state="disabled")
-        self.cchkbox.configure(state="disabled")
-        self.cchkbox_var.set(False)
+        self.advanced_setting_ent.configure(state="disabled")
 
     def estimate(self):
         program_dict = {}
@@ -657,6 +707,15 @@ class ConfFrame(LabelFrameBase):
     def update(self):
         key = self.key_combo.get()
         key_dict = {1: key}
+        style = self.style_combo.get()
+        shorten = self.shorten_chkbox_var.get()
+        advanced_settings = self.advanced_setting_ent.get()
+        if advanced_settings != "":
+            splitted_settings = advanced_settings.strip().split(",")
+            for settings in splitted_settings:
+                num_measure, _key = settings.split(":")
+                key_dict[int(num_measure)] = key
+                
         program_dict = {}
         pitch_dict = {}
         for i in range(16):
@@ -683,10 +742,9 @@ class ConfFrame(LabelFrameBase):
                 pitch_dict[9].append([0, 0])
                 drum_modes.append(drum_str)
 
-        enable_chord = self.cchkbox_var.get()
-        print(program_dict, key_dict, pitch_dict, drum_modes, enable_chord)
+        print(program_dict, key_dict, pitch_dict, drum_modes, style)
         self.master._update(
-            program_dict, key_dict, pitch_dict, drum_modes, enable_chord
+            program_dict, key_dict, pitch_dict, drum_modes, style, shorten
         )
 
 
@@ -732,6 +790,25 @@ class RunFrame(LabelFrameBase):
         self.numms_ent.configure(state="disabled")
         self.numms_ent.pack(side="left")
 
+        # 譜面の幅
+        self.width_frm = tk.Frame(self.pgrid_frm)
+        self.width_frm.configure(bg=self.bg)
+        self.width_frm.grid(row=0, column=2, sticky="w", padx=16)
+        self.width_lbl = tk.Label(self.width_frm)
+        self.width_lbl.configure(
+            bg=self.bg, text="譜面の横幅",
+            font=("ms gothic", 9),
+        )
+        self.width_lbl.grid(row=0, column=0, sticky="w")
+        self.width_frm2 = tk.Frame(self.width_frm)
+        self.width_frm2.configure(bg=self.bg)
+        self.width_frm2.grid(row=0, column=1, sticky="w", padx=5, pady=3)
+        self.width_ent = tk.Entry(self.width_frm2)
+        self.width_ent.configure(width=10)
+        self.width_ent.insert(0, "29.76")
+        self.width_ent.configure(state="disabled")
+        self.width_ent.pack()
+
         self.mchkbox_var = tk.BooleanVar()
         self.mchkbox = tk.Checkbutton(self.pgrid_frm)
         self.mchkbox.configure(
@@ -741,7 +818,7 @@ class RunFrame(LabelFrameBase):
             bg=self.bg,
             font=("ms gothic", 9),
         )
-        self.mchkbox.grid(padx=(15, 0), row=0, column=2, sticky="w")
+        self.mchkbox.grid(padx=(15, 0), row=1, column=2, sticky="w")
 
         # グリッド用のFrame
         self.sgrid_frm = tk.Frame(self)
@@ -808,6 +885,7 @@ class RunFrame(LabelFrameBase):
         self.acv_ent.configure(state="normal")
         self.smnum_ent.configure(state="normal")
         self.numms_ent.configure(state="normal")
+        self.width_ent.configure(state="normal")
 
     def state_off(self):
         self.run_btn.configure(state="disabled")
@@ -815,6 +893,7 @@ class RunFrame(LabelFrameBase):
         self.acv_ent.configure(state="disabled")
         self.smnum_ent.configure(state="disabled")
         self.numms_ent.configure(state="disabled")
+        self.width_ent.configure(state="disabled")
 
     def _enter_filename(self, filename, add_msg=True):
         dirname = osp.dirname(filename)
@@ -875,6 +954,7 @@ class RunFrame(LabelFrameBase):
         self.numms_ent.insert(0, "{}".format(num_measures_in_system))
         xlsx_name = self.fname_ent.get()
         again_cvt = self.mchkbox_var.get()
+        score_width = float(self.width_ent.get())
         if xlsx_name == "":
             self.master.add_msg("ファイル名を入力してください")
             return None
@@ -886,6 +966,7 @@ class RunFrame(LabelFrameBase):
                 again_cvt=again_cvt,
                 start_measure_num=start_measure_num,
                 num_measures_in_system=num_measures_in_system,
+                score_width=score_width,
             )
 
 

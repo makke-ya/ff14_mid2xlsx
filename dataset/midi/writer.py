@@ -173,7 +173,7 @@ class MidiWriter(MidiIOBase):
         if channel_num is None:
             print("Error: already using All 16 Channels!")
             return
-        print("Channel num: {}")
+        # print("Channel num: {}")
         self.use_channel_list[channel_num] = True
 
         track = MidiTrack()

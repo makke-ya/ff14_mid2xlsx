@@ -230,7 +230,7 @@ class MidiLoader(MidiIOBase):
                     #     * quantized_units[min_odd_idx]
                     # )
                     # min_unit = min(DICT_FOR_QUANTIZED_UNIT_TIMES.values())
-                    min_unit = DICT_FOR_QUANTIZED_UNIT_TIMES[(6, 48)]
+                    min_unit = DICT_FOR_QUANTIZED_UNIT_TIMES[(4, 48)]
                     rev_time = (
                         ceil(time / min_unit) * min_unit
                     )

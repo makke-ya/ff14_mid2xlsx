@@ -10,7 +10,7 @@ from ._static_data import (
 )
 
 class XlsxLoader(XlsxIOBase):
-    def __init__(self, filename, max_beat_num=4):
+    def __init__(self, filename, max_beat_num=8):
         """        
         Parameters
         ----------

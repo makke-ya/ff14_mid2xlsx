@@ -139,7 +139,7 @@ DICT_FOR_PROGRAM = {
     ("Gunshot",	"銃声"): 127,
 }
 DICT_FOR_PROGRAM_onlyFF14 = {
-    # Ver. Patch5.1x
+    # Ver. Patch5.4
     ("Orchestral Harp",	"ハープ"): (46, 60),
     ("Acoustic Piano",	"アコースティックピアノ", "グランドピアノ"): (0, 72),
     ("Acoustic Guitar (steel)",	"アコースティックギター（スチール弦）", "スチールギター"): (25, 48),
@@ -164,6 +164,11 @@ DICT_FOR_PROGRAM_onlyFF14 = {
     ("French horn",	"フレンチ・ホルン", "ホルン"): (60, 48),
     ("Alto Sax",	"アルトサックス", "サックス"): (65, 60),
     # ("Soprano Sax",	"ソプラノサックス"): 64,
+
+    ("Violin",	"ヴァイオリン"): (40, 60),
+    ("Viola",	"ヴィオラ"): (41, 60),
+    ("Cello",	"チェロ"): (42, 48),
+    ("Double bass",	"コントラバス"): (43, 36),
 }
 
 ## FOR LOADER
