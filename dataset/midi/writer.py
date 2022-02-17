@@ -177,6 +177,7 @@ class MidiWriter(MidiIOBase):
         self.use_channel_list[channel_num] = True
 
         track = MidiTrack()
+        print(program_num, channel_num)
         track.append(
             Message("program_change", channel=channel_num, program=program_num, time=0)
         )
@@ -218,7 +219,7 @@ class MidiWriter(MidiIOBase):
                                             channel=channel_num,
                                             note=bef_pitch,
                                             velocity=0,
-                                            time=interval_time,
+                                            time=int(interval_time),
                                         )
                                     )
                                     bef_time = now_time
@@ -233,7 +234,7 @@ class MidiWriter(MidiIOBase):
                                             channel=channel_num,
                                             note=bef_pitch,
                                             velocity=0,
-                                            time=interval_time,
+                                            time=int(interval_time),
                                         )
                                     )
                                     bef_time = now_time
@@ -250,7 +251,7 @@ class MidiWriter(MidiIOBase):
                                         channel=channel_num,
                                         note=pitch,
                                         velocity=100,
-                                        time=interval_time,
+                                        time=int(interval_time),
                                     )
                                 )
                                 pitches.append(pitch)
@@ -270,7 +271,7 @@ class MidiWriter(MidiIOBase):
                         channel=channel_num,
                         note=bef_pitch,
                         velocity=0,
-                        time=interval_time,
+                        time=int(interval_time),
                     )
                 )
                 interval_time = 0

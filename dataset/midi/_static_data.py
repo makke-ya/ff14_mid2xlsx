@@ -169,6 +169,11 @@ DICT_FOR_PROGRAM_onlyFF14 = {
     ("Viola",	"ヴィオラ"): (41, 60),
     ("Cello",	"チェロ"): (42, 48),
     ("Double bass",	"コントラバス"): (43, 36),
+
+    ("Overdriven Guitar",	"オーバードライブギター"): (29, 48),
+    ("Electric Guitar (clean)",	"クリーンギター"): (27, 48),
+    ("Electric Guitar (muted)",	"ミュートギター"): (28, 48),
+    ("Distortion Guitar",	"ディストーションギター"): (30, 36),
 }
 
 ## FOR LOADER

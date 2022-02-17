@@ -32,7 +32,7 @@ class XlsxWriter(XlsxIOBase):
         score_height=3.0,
         mark_width=0.7,
         shorten_width=0.5,
-        header_width=2.7,
+        header_width=2.5,
         title_width=8.0,
         color_width=1.35,
         shorten=False,
@@ -42,6 +42,7 @@ class XlsxWriter(XlsxIOBase):
         octave2_color="ffead1dc",
         octave3_color="ffff00ff",
         border_color="ff000000",
+        non_border_color="ffc7c8c8",
     ):
         """
         Parameters
@@ -123,6 +124,7 @@ class XlsxWriter(XlsxIOBase):
         self.thin_side = Side(color=border_color, style="thin")
         self.hair_side = Side(color=border_color, style="hair")
         self.dot_side = Side(color=border_color, style="dotted")
+        self.non_border_side = Side(color=non_border_color, style="thin")
         self.note_font = Font(name="MS Pゴシック", sz=10, b=True)
         self.measure_font = Font(name="MS Pゴシック", sz=10, b=False)
         self.measure_align = Alignment(horizontal="left")
@@ -139,7 +141,7 @@ class XlsxWriter(XlsxIOBase):
             horizontal="center", vertical="center", wrap_text=True
         )
 
-    def add_common_data_list(self, common_data_list, start_row=9, start_column=3):
+    def add_common_data_list(self, common_data_list, start_row=10, start_column=3):
         """
         共通音楽データ(CommonSoundData)のリストを記述する関数
         
@@ -225,6 +227,7 @@ class XlsxWriter(XlsxIOBase):
             mark_idx = self._plot_marks(
                 now_row, [now_column, now_column + sum_cells + 1], mark_idx
             )
+            self._adjust_cell_height(now_row, now_row)
             now_column += 1
             for notes_in_measure in notes_in_system:
                 merge_cell_nums = []
@@ -330,7 +333,7 @@ class XlsxWriter(XlsxIOBase):
             self._get_cell_widths(self.ws, now_col, now_col + sum_cells - 1).items(),
             key=lambda x: x[0],
         )
-        print(width_list)
+        print("width_list:", width_list)
 
         # 曲名
         border = Border(
@@ -348,7 +351,7 @@ class XlsxWriter(XlsxIOBase):
         self._merge_cells(now_row, now_col, now_row, width_list[idx - 1][0])
         self._plot_cell(now_row, now_col, val=self.title, border=border)
         self._plot_cell(now_row, width_list[idx - 1][0], border=border)
-        now_col = width_list[idx + 1][0]
+        now_col = width_list[idx][0]
 
         # メトロノーム
         idx = self._get_next_width_idx(width_list, idx, self.header_width)
@@ -404,28 +407,50 @@ class XlsxWriter(XlsxIOBase):
         self._merge_cells(now_row, now_col, now_row, width_list[idx - 1][0])
         self._plot_cell(now_row - 1, now_col, val="最高音highest")
         self._plot_cell(now_row, now_col, fill=self.octave_color_fill[3])
+        if len(width_list) <= idx:
+            idx = color_start_idx
+            now_row += 2
+        now_col = width_list[idx][0]
 
-        # 動画&MIDI
+        # 短縮版の音説明
+        idx = self._get_next_width_idx(width_list, idx, self.color_width)
+        self._merge_cells(now_row, now_col, now_row, width_list[idx - 1][0])
+        self._plot_cell(now_row - 1, now_col, val="C=ド,F=ファ")
+        self._plot_cell(now_row, now_col, fill=self.octave_color_fill[3])
+
+
+        # 動画&MIDI&編曲者
         idx = 0
         now_col = start_column + 1
-        now_row = 4
+        now_row = 3
         idx = self._get_next_width_idx(width_list, idx, self.header_width)
         self._merge_cells(now_row, now_col, now_row, width_list[idx - 1][0])
         self._merge_cells(now_row + 1, now_col, now_row + 1, width_list[idx - 1][0])
-        self._plot_cell(now_row, now_col, val="動画", border=border)
-        self._plot_cell(now_row + 1, now_col, val="MIDI", border=border)
+        self._merge_cells(now_row + 2, now_col, now_row + 2, width_list[idx - 1][0])
+        self._merge_cells(now_row + 3, now_col, now_row + 3, width_list[idx - 1][0])
+        self._plot_cell(now_row, now_col, val="原曲URL", border=border)
+        self._plot_cell(now_row + 1, now_col, val="FF演奏動画URL", border=border)
+        self._plot_cell(now_row + 2, now_col, val="参考音源リンク", border=border)
+        self._plot_cell(now_row + 3, now_col, val="編曲者", border=border)
         now_col = width_list[idx][0]
 
-        # 動画&MIDI欄
+        # 動画&MIDI&編曲者欄
         idx = self._get_next_width_idx(
             width_list, idx, self.title_width + (self.header_width * 2)
         )
         self._merge_cells(now_row, now_col, now_row, width_list[idx - 1][0])
         self._merge_cells(now_row + 1, now_col, now_row + 1, width_list[idx - 1][0])
+        self._merge_cells(now_row + 2, now_col, now_row + 2, width_list[idx - 1][0])
+        self._merge_cells(now_row + 3, now_col, now_row + 3, width_list[idx - 1][0])
+        self._plot_cell(now_row, now_col, border=border)
         self._plot_cell(now_row, now_col, border=border)
         self._plot_cell(now_row, width_list[idx - 1][0], border=border)
         self._plot_cell(now_row + 1, now_col, border=border)
         self._plot_cell(now_row + 1, width_list[idx - 1][0], border=border)
+        self._plot_cell(now_row + 2, now_col, border=border)
+        self._plot_cell(now_row + 2, width_list[idx - 1][0], border=border)
+        self._plot_cell(now_row + 3, now_col, border=border)
+        self._plot_cell(now_row + 3, width_list[idx - 1][0], border=border)
 
     def _get_next_width_idx(self, width_list, idx, limit):
         sum_width = 0
@@ -487,7 +512,12 @@ class XlsxWriter(XlsxIOBase):
         print(start_row, start_column, "{}:{}".format(start_cell_str, end_cell_str))
         for row_cells in self.ws["{}:{}".format(start_cell_str, end_cell_str)]:
             for idx, cell in enumerate(row_cells):
-                border = Border(top=self.medium_side, bottom=self.medium_side)
+                border = Border(
+                    top=self.medium_side,
+                    left=self.non_border_side,
+                    bottom=self.medium_side,
+                    right=self.non_border_side,
+                )
                 if idx == 0 and thick_flag[0] == 1:
                     border.left = self.thin_side
                 elif idx == 0 and thick_flag[0] == 2:
@@ -658,6 +688,13 @@ class XlsxWriter(XlsxIOBase):
                 )
                 now_column += 1
 
+    def _adjust_cell_height(self, start_row, end_row):
+        sheet = self.ws
+        for row in range(start_row, end_row + 1):
+            sheet.row_dimensions[row].height = self._convert_cm2width(
+                self.score_height
+            )
+
     def fwrite(self, filename):
         self.wb.save(filename)
 
@@ -706,8 +743,8 @@ class XlsxWriter(XlsxIOBase):
 
 class ThreeLineXlsxWriter(XlsxWriter):
     def __init__(self, **kwargs):
-        kwargs["score_height"] = 2.2
         super().__init__(**kwargs)
+        self.score_height = 2.2
 
     def add_common_data(
         self, common_data, note_list, num_cells_map, borders_map,
@@ -875,7 +912,12 @@ class ThreeLineXlsxWriter(XlsxWriter):
             print(start_row, start_column, "{}:{}".format(start_cell_str, end_cell_str))
             for row_cells in self.ws["{}:{}".format(start_cell_str, end_cell_str)]:
                 for idx, cell in enumerate(row_cells):
-                    border = Border()
+                    border = Border(
+                        top=self.non_border_side,
+                        left=self.non_border_side,
+                        bottom=self.non_border_side,
+                        right=self.non_border_side,
+                    )
                     if row == start_row:
                         border.top = self.medium_side
                         border.bottom = self.thin_side
@@ -938,15 +980,12 @@ class ThreeLineXlsxWriter(XlsxWriter):
                     row + margin, column, notes_str, self.note_font, fill=fill)
         return bef_sound
 
-    def _adjust_cell_height(self, start_row, end_row):
-        sheet = self.ws
-        for row in range(start_row, end_row + 1):
-            sheet.row_dimensions[row].height = self._convert_cm2width(
-                self.score_height
-            )
-
 
 class FlexibleLineXlsxWriter(ThreeLineXlsxWriter):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.score_height = 3.0
+
     def add_common_data(
         self, common_data, note_list, num_cells_map, borders_map,
         start_row, start_column=3
@@ -1084,7 +1123,12 @@ class FlexibleLineXlsxWriter(ThreeLineXlsxWriter):
             print(start_row, start_column, "{}:{}".format(start_cell_str, end_cell_str))
             for row_cells in self.ws["{}:{}".format(start_cell_str, end_cell_str)]:
                 for idx, cell in enumerate(row_cells):
-                    border = Border()
+                    border = Border(
+                        top=self.non_border_side,
+                        left=self.non_border_side,
+                        bottom=self.non_border_side,
+                        right=self.non_border_side,
+                    )
                     if row == start_row:
                         border.top = self.medium_side
                     else:

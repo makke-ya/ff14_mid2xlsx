@@ -88,7 +88,7 @@ class RootApp(FrameBase):
 
 
 class MainFrame(FrameBase):
-    def __init__(self, master=None, bg="white", height=820):
+    def __init__(self, master=None, bg="white", height=620):
         super().__init__(master, bg=bg)
         self.configure(height=height)
         self.pack(fil="x")
@@ -121,7 +121,7 @@ class RightFrame(FrameBase):
         # 通知リスト
         self.msg_list = tk.Listbox(self.mgrid_frm)
         # self.msg_list = tk.Listbox(self)
-        self.msg_list.configure(width=65, height=50)
+        self.msg_list.configure(width=65, height=36)
         self.msg_list.grid(row=0, column=0, sticky="nwes")
 
         # Scrollbar(縦)
@@ -382,7 +382,7 @@ class InputFrame(LabelFrameBase):
         # 読み込んだ画像リスト
         self.midi_list = ttk.Treeview(self)
         self.midi_list.configure(column=(1,), show="headings", height=1)
-        self.midi_list.column(1, width=371)
+        self.midi_list.column(1, width=731)
         self.midi_list.heading(1, text="path/name")
         self.midi_list.pack(padx=5)
 
@@ -493,22 +493,22 @@ class ConfFrame(LabelFrameBase):
         self.shorten_chkbox.grid(padx=(3, 0), row=1, column=2, sticky="w")
 
         # アドバンスド設定のフレーム
-        self.advanced_settings_frm = tk.Frame(self)
-        self.advanced_settings_frm.configure(bg=self.bg)
-        self.advanced_settings_frm.pack(padx=5, pady=3)
+        # self.advanced_settings_frm = tk.Frame(self)
+        # self.advanced_settings_frm.configure(bg=self.bg)
+        # self.advanced_settings_frm.pack(padx=5, pady=3)
 
         # 変換開始小節数
-        self.advanced_setting_lbl = tk.Label(self.advanced_settings_frm)
+        self.advanced_setting_lbl = tk.Label(self.kgrid_frm)
         self.advanced_setting_lbl.configure(
             bg=self.bg, text="アドバンスド設定",
             font=("ms gothic", 9),
         )
-        self.advanced_setting_lbl.grid(row=0, column=0, sticky="w")
-        self.advanced_setting_frm = tk.Frame(self.advanced_settings_frm)
+        self.advanced_setting_lbl.grid(row=0, column=3, sticky="w")
+        self.advanced_setting_frm = tk.Frame(self.kgrid_frm)
         self.advanced_setting_frm.configure(bg=self.bg)
-        self.advanced_setting_frm.grid(row=1, column=0, sticky="w", padx=18)
+        self.advanced_setting_frm.grid(row=1, column=3, sticky="w", padx=18)
         self.advanced_setting_ent = tk.Entry(self.advanced_setting_frm)
-        self.advanced_setting_ent.configure(width=57)
+        self.advanced_setting_ent.configure(width=52)
         self.advanced_setting_ent.insert(0, "")
         self.advanced_setting_ent.configure(state="disabled")
         self.advanced_setting_ent.pack(side="left")
@@ -525,18 +525,30 @@ class ConfFrame(LabelFrameBase):
             font=("MS Gothic", 9),
         )
         self.nondrum_lbl.grid(row=0, column=0, sticky="nw")
-        self.inst_lbl = tk.Label(self.grid_frm)
-        self.inst_lbl.configure(
+        self.left_inst_lbl = tk.Label(self.grid_frm)
+        self.left_inst_lbl.configure(
             text="楽器名", bg=self.bg, 
             font=("MS Gothic", 9),
         )
-        self.inst_lbl.grid(row=0, column=1, sticky="s")
-        self.pitch_lbl = tk.Label(self.grid_frm)
-        self.pitch_lbl.configure(
+        self.left_inst_lbl.grid(row=0, column=1, sticky="s")
+        self.left_pitch_lbl = tk.Label(self.grid_frm)
+        self.left_pitch_lbl.configure(
             text="ピッチ変化", bg=self.bg,
             font=("MS Gothic", 9),
         )
-        self.pitch_lbl.grid(row=0, column=2, sticky="s")
+        self.left_pitch_lbl.grid(row=0, column=2, sticky="s")
+        self.right_inst_lbl = tk.Label(self.grid_frm)
+        self.right_inst_lbl.configure(
+            text="楽器名", bg=self.bg, 
+            font=("MS Gothic", 9),
+        )
+        self.right_inst_lbl.grid(row=0, column=4, sticky="s")
+        self.right_pitch_lbl = tk.Label(self.grid_frm)
+        self.right_pitch_lbl.configure(
+            text="ピッチ変化", bg=self.bg,
+            font=("MS Gothic", 9),
+        )
+        self.right_pitch_lbl.grid(row=0, column=5, sticky="s")
         # self.over_lbl = tk.Label(self.grid_frm)
         # self.over_lbl.configure(text="範囲外の音数", bg=self.bg)
         # self.over_lbl.grid(row=0, column=3, sticky="s")
@@ -546,9 +558,15 @@ class ConfFrame(LabelFrameBase):
         self.chkbox_list = [tk.Checkbutton(self.grid_frm) for _ in range(16)]
         self.inst_combo_list = [ttk.Combobox(self.grid_frm) for _ in range(16)]
         self.pitch_combo_list = [ttk.Combobox(self.grid_frm) for _ in range(16)]
+        row_margin = 0
+        column_margin = 0
         for i in range(16):
             if i == 9:
                 continue
+            if i > 7:
+                row_margin = -8
+                column_margin = 3
+            
             # チェックボックス設置
             self.chkbox_list[i].configure(
                 width=12,
@@ -558,7 +576,7 @@ class ConfFrame(LabelFrameBase):
                 bg=self.bg,
                 font=("MS Gothic", 9),
             )
-            self.chkbox_list[i].grid(row=i + 1, column=0, sticky="w")
+            self.chkbox_list[i].grid(row=row_margin + i + 1, column=column_margin, sticky="w")
             # 楽器セレクト
             self.inst_combo_list[i].configure(
                 width=25,
@@ -567,7 +585,7 @@ class ConfFrame(LabelFrameBase):
                 font=("MS Gothic", 9),
             )
             self.inst_combo_list[i].current(0)
-            self.inst_combo_list[i].grid(row=i + 1, column=1, sticky="w")
+            self.inst_combo_list[i].grid(row=row_margin + i + 1, column=column_margin + 1, sticky="w")
             # ピッチ変化セレクト
             self.pitch_combo_list[i].configure(
                 width=12,
@@ -576,7 +594,7 @@ class ConfFrame(LabelFrameBase):
                 font=("MS Gothic", 9),
             )
             self.pitch_combo_list[i].current(0)
-            self.pitch_combo_list[i].grid(row=i + 1, column=2, sticky="w")
+            self.pitch_combo_list[i].grid(row=row_margin + i + 1, column=column_margin + 2, sticky="w")
 
         # ドラム
         self.dgrid_frm = tk.Frame(self)
@@ -714,7 +732,7 @@ class ConfFrame(LabelFrameBase):
             splitted_settings = advanced_settings.strip().split(",")
             for settings in splitted_settings:
                 num_measure, _key = settings.split(":")
-                key_dict[int(num_measure)] = key
+                key_dict[int(num_measure)] = _key
                 
         program_dict = {}
         pitch_dict = {}
@@ -769,26 +787,10 @@ class RunFrame(LabelFrameBase):
         self.smnum_frm.configure(bg=self.bg)
         self.smnum_frm.grid(row=0, column=1, sticky="s", pady=3)
         self.smnum_ent = tk.Entry(self.smnum_frm)
-        self.smnum_ent.configure(width=10)
+        self.smnum_ent.configure(width=12)
         self.smnum_ent.insert(0, "1")
         self.smnum_ent.configure(state="disabled")
         self.smnum_ent.pack(side="left")
-
-        # 変換開始小節数
-        self.numms_lbl = tk.Label(self.pgrid_frm)
-        self.numms_lbl.configure(
-            bg=self.bg, text="Xlsx一段の小節数",
-            font=("ms gothic", 9),
-        )
-        self.numms_lbl.grid(row=1, column=0, sticky="e", padx=5)
-        self.numms_frm = tk.Frame(self.pgrid_frm)
-        self.numms_frm.configure(bg=self.bg)
-        self.numms_frm.grid(row=1, column=1, sticky="s", pady=3)
-        self.numms_ent = tk.Entry(self.numms_frm)
-        self.numms_ent.configure(width=10)
-        self.numms_ent.insert(0, "4")
-        self.numms_ent.configure(state="disabled")
-        self.numms_ent.pack(side="left")
 
         # 譜面の幅
         self.width_frm = tk.Frame(self.pgrid_frm)
@@ -804,10 +806,26 @@ class RunFrame(LabelFrameBase):
         self.width_frm2.configure(bg=self.bg)
         self.width_frm2.grid(row=0, column=1, sticky="w", padx=5, pady=3)
         self.width_ent = tk.Entry(self.width_frm2)
-        self.width_ent.configure(width=10)
+        self.width_ent.configure(width=12)
         self.width_ent.insert(0, "29.76")
         self.width_ent.configure(state="disabled")
         self.width_ent.pack()
+
+        # 変換開始小節数
+        self.numms_lbl = tk.Label(self.pgrid_frm)
+        self.numms_lbl.configure(
+            bg=self.bg, text="Xlsx一段の小節数",
+            font=("ms gothic", 9),
+        )
+        self.numms_lbl.grid(row=0, column=3, sticky="e", padx=5)
+        self.numms_frm = tk.Frame(self.pgrid_frm)
+        self.numms_frm.configure(bg=self.bg)
+        self.numms_frm.grid(row=0, column=4, sticky="s", pady=3)
+        self.numms_ent = tk.Entry(self.numms_frm)
+        self.numms_ent.configure(width=12)
+        self.numms_ent.insert(0, "4")
+        self.numms_ent.configure(state="disabled")
+        self.numms_ent.pack(side="left")
 
         self.mchkbox_var = tk.BooleanVar()
         self.mchkbox = tk.Checkbutton(self.pgrid_frm)
@@ -818,7 +836,7 @@ class RunFrame(LabelFrameBase):
             bg=self.bg,
             font=("ms gothic", 9),
         )
-        self.mchkbox.grid(padx=(15, 0), row=1, column=2, sticky="w")
+        self.mchkbox.grid(padx=(15, 0), row=0, column=5, sticky="w")
 
         # グリッド用のFrame
         self.sgrid_frm = tk.Frame(self)
@@ -836,7 +854,7 @@ class RunFrame(LabelFrameBase):
         self.acv_frm.configure(bg=self.bg)
         self.acv_frm.grid(row=1, column=1, sticky="s", pady=3)
         self.acv_ent = tk.Entry(self.acv_frm)
-        self.acv_ent.configure(width=40)
+        self.acv_ent.configure(width=102)
         self.acv_ent.insert(0, "未選択")
         self.acv_ent.configure(state="disabled")
         self.acv_ent.pack(side="left")
@@ -860,7 +878,7 @@ class RunFrame(LabelFrameBase):
 
         # ファイル名入力欄
         self.fname_ent = tk.Entry(self.sgrid_frm)
-        self.fname_ent.configure(width=40)
+        self.fname_ent.configure(width=102)
         self.fname_ent.insert("end", "test")
         self.fname_ent.grid(row=2, column=1, sticky="w")
 
@@ -877,7 +895,7 @@ class RunFrame(LabelFrameBase):
             command=self.midi_trans,
             font=("ms gothic", 9),
         )
-        self.run_btn.grid(padx=(135, 20), pady=(0, 5), row=0, column=0, sticky="w")
+        self.run_btn.grid(padx=(350, 20), pady=(0, 5), row=0, column=0, sticky="w")
 
     def state_on(self):
         self.run_btn.configure(state="normal")

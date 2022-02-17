@@ -10,7 +10,7 @@ from ._static_data import (
 )
 
 class XlsxLoader(XlsxIOBase):
-    def __init__(self, filename, max_beat_num=8):
+    def __init__(self, filename, max_beat_num=8, force_same_width=False):
         """        
         Parameters
         ----------
@@ -27,6 +27,7 @@ class XlsxLoader(XlsxIOBase):
         else:
             raise OSError
         self.max_beat_num = max_beat_num
+        self.force_same_width = force_same_width
 
     def get_sound_list(self, sheet_name, start_col_char, end_col_char, row_list, get_rate=True):
         """
@@ -148,6 +149,9 @@ class XlsxLoader(XlsxIOBase):
                 print("    w_rate(beats):", widths_in_measure)
                 print("  w_rate(in beat):", widths_in_beats)
                 print("            notes:", notes)
+                if self.force_same_width:
+                    width_rates_in_measure = [1.0 for r in width_rates_in_measure]
+                    width_rates_in_beats = [[1.0 for r in rs] for rs in width_rates_in_beats]
                 all_rates.append((width_rates_in_measure, width_rates_in_beats))
                 all_notes.append(notes)
                 measure_num += 1
@@ -285,7 +289,6 @@ class XlsxLoader(XlsxIOBase):
             color = "gray"
         else:
             color = "white"
-        # print(row_num, col_num, cell.value, cell.fill.fgColor.rgb, cell.fill.bgColor.rgb, hsv, color, cell.border.left.style, cell.border.right.style)
         return cell.value, color, cell.border.left.style, cell.border.right.style
 
     def _get_merged_cells(self, sheet):
@@ -303,10 +306,8 @@ class XlsxLoader(XlsxIOBase):
             (row, col)の数値が入ったリスト
         """
         merged_cells = []
-        for merged_cell_str in sheet.merged_cell_ranges:
-            start_cell, end_cell = merged_cell_str.split(":")
-            merge_start_row, merge_start_col = self._convert_cell_str(start_cell)
-            merge_end_row, merge_end_col = self._convert_cell_str(end_cell)
+        for merged_cell in sheet.merged_cell_ranges:
+            merge_start_col, merge_start_row, merge_end_col, merge_end_row = merged_cell.bounds
             if merge_start_row != merge_end_row:
                 continue  # 2行以上にわたっている結合セルなので、楽譜以外の結合セルと判定
             else:
