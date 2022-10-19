@@ -141,7 +141,7 @@ class Mid2XlsxConverter(object):
         
     def fwrite(
         self, filename, title_name, on_list=None, style="1行固定", shorten=False,
-        start_measure_num=1, num_measures_in_system=4, score_width=29.76
+        start_measure_num=1, num_measures_in_system=4, score_width=29.76, progress_bar=None
     ):
         _common_data_list = []
         if on_list is not None:
@@ -169,7 +169,7 @@ class Mid2XlsxConverter(object):
             score_width=score_width,
             shorten=shorten,
         )
-        self.xlsx_data.add_common_data_list(_common_data_list)
+        self.xlsx_data.add_common_data_list(_common_data_list, progress_bar=progress_bar)
         self.xlsx_data.fwrite(filename)
 
 

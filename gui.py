@@ -72,6 +72,9 @@ class RootApp(FrameBase):
         self, master=None, title="test app", bg="snow",
     ):
         super().__init__(master, bg=bg)
+        s = ttk.Style()
+        s.theme_use("winnative")
+        s.configure("TProgressbar", thickness=5)
 
         self.master.title(title)  # ウィンドウタイトルを指定
         self.master.resizable(0, 0)  # ウィンドウサイズの変更可否設定
@@ -121,7 +124,7 @@ class RightFrame(FrameBase):
         # 通知リスト
         self.msg_list = tk.Listbox(self.mgrid_frm)
         # self.msg_list = tk.Listbox(self)
-        self.msg_list.configure(width=65, height=36)
+        self.msg_list.configure(width=65, height=37)
         self.msg_list.grid(row=0, column=0, sticky="nwes")
 
         # Scrollbar(縦)
@@ -344,6 +347,8 @@ class LeftFrame(FrameBase):
             on_dict = self._get_on_dict()
             on_list = list(on_dict.keys())
             xlsx_name = filename + ".xlsx"
+            self.run_frm.progress_bar["value"] = 0
+            self.run_frm.progress_bar.update()
             self.m2x_converter.fwrite(
                 xlsx_name, title_name, on_list,
                 style=self.style,
@@ -351,7 +356,10 @@ class LeftFrame(FrameBase):
                 start_measure_num=start_measure_num,
                 num_measures_in_system=num_measures_in_system,
                 score_width=score_width,
+                progress_bar=self.run_frm.progress_bar,
             )
+            self.run_frm.progress_bar["value"] = 100
+            self.run_frm.progress_bar.update()
             self.master.add_msg("変換完了")
             self.master.add_msg("    Xlsx: {}".format(xlsx_name))
 
@@ -896,6 +904,11 @@ class RunFrame(LabelFrameBase):
             font=("ms gothic", 9),
         )
         self.run_btn.grid(padx=(350, 20), pady=(0, 5), row=0, column=0, sticky="w")
+
+        # プログレスバー
+        self.progress = 0
+        self.progress_bar = ttk.Progressbar(self.rgrid_frm, orient='horizontal', length=750, mode='determinate', style="TProgressbar")
+        self.progress_bar.grid(column=0, row=1, padx=20)
 
     def state_on(self):
         self.run_btn.configure(state="normal")

@@ -14,6 +14,8 @@ def create_midi(xlsx_data, tempo, data_dict, mid_name):
             data_dict["end_column_char"],
             row_list,
         )
+        print(sound_list)
+        print(rate_list)
         midi_data.add_sound_list(
             sound_list,
             rate_list,
@@ -24,8 +26,355 @@ def create_midi(xlsx_data, tempo, data_dict, mid_name):
     
 
 def ems_main():
-    xlsx_data = XlsxLoader("EMS楽譜専用(EMS score).xlsx")
+    # xlsx_data = XlsxLoader("EMS楽譜専用(EMS score).xlsx")
+    # xlsx_data = XlsxLoader("EMS作曲・下書き専用_WOT.xlsx", force_same_width=True)
+    # xlsx_data = XlsxLoader("UU.xlsx", force_same_width=True)
+    # xlsx_data = XlsxLoader("CR2下書き.xlsx", force_same_width=True)
+    xlsx_data = XlsxLoader("EMS作曲・下書き専用_CON.xlsx", force_same_width=True)
     makedirs("out", exist_ok=True)
+
+    # CON下書き
+    dict_CON = {
+        "sheet_name": "CON下書き",
+        "start_column_char": "E",
+        "end_column_char": "BP",
+        "row_lists": [
+            list(range(15, 94, 8)),
+            list(range(16, 94, 8)),
+            list(range(17, 94, 8)),
+            list(range(18, 94, 8)),
+            list(range(19, 94, 8)),
+            list(range(20, 94, 8)),
+            list(range(21, 94, 8)),
+        ],
+        "program_list": [
+            "グランドピアノ", 
+            "グランドピアノ", 
+            "グランドピアノ", 
+            "グランドピアノ", 
+            "ヴァイオリン", 
+            "ヴァイオリン", 
+            "コントラバス", 
+        ],
+        "rhythm": { 
+            1: (4, 4),
+        }
+    }
+    tempo = 60
+    create_midi(xlsx_data, tempo, dict_CON, "out/CON_tempo{}.mid".format(tempo))
+    return
+
+    # CR2下書き
+    dict_CR2 = {
+        "sheet_name": "CR2下書き",
+        "start_column_char": "E",
+        "end_column_char": "AZ",
+        "row_lists": [
+            list(range(11, 40, 3)),
+            list(range(12, 40, 3)),
+        ],
+        "program_list": [
+            "グランドピアノ", "スチールギター"
+        ],
+        "rhythm": { 
+            1: (6, 4),
+        }
+    }
+    tempo = 128
+    create_midi(xlsx_data, tempo, dict_CR2, "out/CR2_tempo{}.mid".format(tempo))
+    return
+
+    # WOT下書き
+    dict_WOT = {
+        "sheet_name": "WOT",
+        "start_column_char": "E",
+        "end_column_char": "BP",
+        "row_lists": [
+            list(range(13, 31, 3)),
+            list(range(14, 32, 3)),
+        ],
+        "program_list": [
+            "パンパイプ", "スチールギター"
+        ],
+        "rhythm": { 
+            1: (4, 4),
+        }
+    }
+    tempo = 75
+    create_midi(xlsx_data, tempo, dict_WOT, "out/WOT_tempo{}.mid".format(tempo))
+    return
+
+    # UU
+    dict_UU = {
+        "sheet_name": "UU下書き",
+        "start_column_char": "E",
+        "end_column_char": "BP",
+        "row_lists": [
+            list(range(14, 337, 9)),
+            list(range(15, 337, 9)),
+            list(range(16, 337, 9)),
+            list(range(17, 337, 9)),
+            list(range(18, 337, 9)),
+            list(range(19, 337, 9)),
+            list(range(20, 337, 9)),
+            list(range(21, 337, 9)),
+        ],
+        "program_list": [
+            "サックス", "ヴァイオリン", "ホルン", "パンパイプ",
+            "オーバードライブギター", "ディストーションギター", "クリーンギター", "ティンパニー"
+        ],
+        "rhythm": { 
+            1: (4, 4),
+        }
+    }
+    tempo = 125
+    create_midi(xlsx_data, tempo, dict_UU, "out/UU_tempo{}.mid".format(tempo))
+    return
+
+    # ALPv4下書き
+    dict_BCD = {
+        "sheet_name": "ALPv4下書き",
+        "start_column_char": "E",
+        "end_column_char": "BP",
+        "row_lists": [
+            list(range(12, 434, 9)),
+            list(range(13, 434, 9)),
+            list(range(14, 434, 9)),
+            list(range(15, 434, 9)),
+            list(range(16, 434, 9)),
+            list(range(17, 434, 9)),
+            list(range(18, 434, 9)),
+            list(range(19, 434, 9)),
+        ],
+        "program_list": [
+            "トランペット", "サックス", "トランペット", "チューバ",
+            "トロンボーン", "トロンボーン", "ハープ", "ティンパニー"
+        ],
+        "rhythm": { 
+            1: (4, 4),
+        }
+    }
+    tempo = 150
+    create_midi(xlsx_data, tempo, dict_BCD, "out/ALPv4_tempo{}.mid".format(tempo))
+    return
+
+    # BCD下書き
+    dict_BCD = {
+        "sheet_name": "BCD下書き",
+        "start_column_char": "E",
+        "end_column_char": "AZ",
+        "row_lists": [
+            list(range(9, 52, 4)),
+            list(range(10, 52, 4)),
+            list(range(11, 52, 4)),
+        ],
+        "program_list": [
+            "パンパイプ", "パンパイプ", "ハープ"
+        ],
+        "rhythm": { 
+            1: (3, 4),
+        }
+    }
+    tempo = 84
+    create_midi(xlsx_data, tempo, dict_BCD, "out/BCD_tempo{}.mid".format(tempo))
+    return
+
+    # DBA下書き
+    dict_DBA = {
+        "sheet_name": "DBA下書き",
+        "start_column_char": "I",
+        "end_column_char": "CJ",
+        "row_lists": [
+            list(range(11, 218, 9)),
+            list(range(12, 218, 9)),
+            list(range(13, 218, 9)),
+            list(range(14, 218, 9)),
+            list(range(15, 218, 9)),
+            list(range(16, 218, 9)),
+            list(range(17, 218, 9)),
+            list(range(18, 218, 9)),
+        ],
+        "program_list": [
+            "サックス", "サックス", "サックス", "グランドピアノ",
+            "サックス", "サックス", "サックス", "ティンパニー"
+        ],
+        "rhythm": { 
+            1: (5, 4),
+        }
+    }
+    tempo = 163
+    create_midi(xlsx_data, tempo, dict_DBA, "out/DBA_tempo{}.mid".format(tempo))
+    return
+
+    # MAT改下書き
+    dict_MAT = {
+        "sheet_name": "MAT改下書き",
+        "start_column_char": "E",
+        "end_column_char": "BP",
+        "row_lists": [
+            list(range(11, 102, 9)),
+            list(range(12, 103, 9)),
+            list(range(13, 104, 9)),
+            list(range(14, 105, 9)),
+            list(range(15, 106, 9)),
+            list(range(16, 107, 9)),
+            list(range(17, 108, 9)),
+            list(range(18, 109, 9)),
+        ],
+        "program_list": [
+            "グランドピアノ", "オーボエ", "パンパイプ", "フルート",
+            "スチールギター", "ホルン", "ハープ", "ピッチカート"
+        ],
+        "rhythm": { 
+            1: (4, 4),
+        }
+    }
+    tempo = 74
+    create_midi(xlsx_data, tempo, dict_MAT, "out/MAT改_tempo{}.mid".format(tempo))
+    return
+
+    # GRI下書き
+    dict_GRI = {
+        "sheet_name": "GRI下書き",
+        "start_column_char": "E",
+        "end_column_char": "BP",
+        "row_lists": [
+            list(range(11, 102, 9)),
+            list(range(12, 103, 9)),
+            list(range(13, 104, 9)),
+            list(range(14, 105, 9)),
+            list(range(15, 106, 9)),
+            list(range(16, 107, 9)),
+            list(range(17, 108, 9)),
+            list(range(18, 109, 9)),
+        ],
+        "program_list": [
+            "パンパイプ", "パンパイプ", "ピッチカート", "ピッチカート",
+            "ピッチカート", "ハープ", "ボンゴ", "スネアドラム"
+        ],
+        "rhythm": { 
+            1: (2, 2),
+        }
+    }
+    tempo = 142
+    create_midi(xlsx_data, tempo, dict_GRI, "out/GRI_tempo{}.mid".format(tempo))
+    return
+
+    # KUG下書き
+    dict_KUG = {
+        "sheet_name": "KUG下書き",
+        "start_column_char": "E",
+        "end_column_char": "BP",
+        "row_lists": [
+            list(range(11, 80, 5)),
+            list(range(12, 80, 5)),
+            list(range(13, 80, 5)),
+            list(range(14, 80, 5)),
+        ],
+        "program_list": [
+            "グランドピアノ", "グランドピアノ", "グランドピアノ", "グランドピアノ",
+        ],
+        "rhythm": { 
+            1: (4, 4),
+        }
+    }
+    tempo = 80
+    create_midi(xlsx_data, tempo, dict_KUG, "out/KUG_tempo{}.mid".format(tempo))
+    return
+
+    # WTH下書き
+    dict_WTH = {
+        "sheet_name": "WTH下書き",
+        "start_column_char": "E",
+        "end_column_char": "BP",
+        "row_lists": [
+            list(range(11, 84, 8)),
+            list(range(12, 85, 8)),
+            list(range(13, 86, 8)),
+            list(range(14, 87, 8)),
+            list(range(15, 88, 8)),
+            list(range(16, 89, 8)),
+            list(range(17, 90, 8)),
+        ],
+        "program_list": [
+            "グランドピアノ", "グランドピアノ", "グランドピアノ", "グランドピアノ",
+            "グランドピアノ", "グランドピアノ", "グランドピアノ"
+        ],
+        "rhythm": { 
+            1: (4, 4),
+        }
+    }
+    tempo = 80
+    create_midi(xlsx_data, tempo, dict_WTH, "out/WTH_tempo{}.mid".format(tempo))
+    return
+
+    # WOS下書き
+    dict_WOS = {
+        "sheet_name": "WOS下書き",
+        "start_column_char": "E",
+        "end_column_char": "BP",
+        "row_lists": [
+            list(range(11, 102, 6)),
+            list(range(12, 103, 6)),
+            list(range(13, 104, 6)),
+            list(range(14, 105, 6)),
+            list(range(15, 106, 6)),
+        ],
+        "program_list": [
+            "グランドピアノ", "グランドピアノ", "グランドピアノ", "グランドピアノ", "グランドピアノ"
+        ],
+        "rhythm": { 
+            1: (4, 4),
+        }
+    }
+    tempo = 150
+    create_midi(xlsx_data, tempo, dict_WOS, "out/WOS_tempo{}.mid".format(tempo))
+    return
+
+    # EW下書き
+    dict_EW = {
+        "sheet_name": "EW下書き",
+        "start_column_char": "E",
+        "end_column_char": "BP",
+        "row_lists": [
+            list(range(11, 78, 6)),
+            list(range(12, 79, 6)),
+            list(range(13, 80, 6)),
+            list(range(14, 81, 6)),
+            # list(range(15, 82, 6)),
+        ],
+        "program_list": [
+            "フルート", "フルート", "ハープ", "ピッチカート"
+        ],
+        "rhythm": { 
+            1: (4, 4),
+        }
+    }
+    tempo = 100
+    create_midi(xlsx_data, tempo, dict_EW, "out/EW_tempo{}.mid".format(tempo))
+
+    # TIT下書き
+    dict_TIT = {
+        "sheet_name": "TIT下書き",
+        "start_column_char": "E",
+        "end_column_char": "AZ",
+        "row_lists": [
+            list(range(11, 62, 5)),
+            list(range(12, 63, 5)),
+            list(range(13, 64, 5)),
+            list(range(14, 65, 5)),
+        ],
+        "program_list": [
+            "フルート", "オーボエ", "クラリネット", "ホルン",
+        ],
+        "rhythm": { 
+            1: (6, 4),
+        }
+
+    }
+    tempo = 180
+    create_midi(xlsx_data, tempo, dict_TIT, "out/TIT_tempo{}.mid".format(tempo))
+    return
 
     # TM4
     dict_TM4 = {

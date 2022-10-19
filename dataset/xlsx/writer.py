@@ -141,7 +141,7 @@ class XlsxWriter(XlsxIOBase):
             horizontal="center", vertical="center", wrap_text=True
         )
 
-    def add_common_data_list(self, common_data_list, start_row=10, start_column=3):
+    def add_common_data_list(self, common_data_list, start_row=10, start_column=3, progress_bar=None):
         """
         共通音楽データ(CommonSoundData)のリストを記述する関数
         
@@ -153,6 +153,9 @@ class XlsxWriter(XlsxIOBase):
             楽譜記述を開始する行, by default 9
         start_column : int, optional
             楽譜記述を開始する列, by default 3
+        progress_bar : tk.ProgressBar or None, optional
+            プログレスバー, by default None
+            Noneの場合は何もしない
         """
         note_lists = [common_data.get_note_list() for common_data in common_data_list]
         rate_lists = [common_data.get_rate_list() for common_data in common_data_list]
@@ -180,10 +183,11 @@ class XlsxWriter(XlsxIOBase):
         # 曲名やメトロノームなど記載
         self._plot_header(num_cells_maps[0][0], start_column)
 
+        progress_tick = 100 // len(common_data_list)
         _start_row = start_row
-        for common_data, note_list, num_cells_map, borders_map in zip(
+        for i, (common_data, note_list, num_cells_map, borders_map) in enumerate(zip(
             common_data_list, note_lists, num_cells_maps, borders_maps
-        ):
+        )):
             end_row = self.add_common_data(
                 common_data,
                 note_list,
@@ -191,12 +195,19 @@ class XlsxWriter(XlsxIOBase):
                 borders_map,
                 _start_row,
                 start_column=start_column,
+                progress_bar=progress_bar,
+                progress_amount=progress_tick,
             )
             _start_row = end_row + 1
+            
+            # 進み具合を表示する場合は更新
+            if progress_bar:
+                progress_bar["value"] = progress_tick * (i + 1)
+                progress_bar.update()
 
     def add_common_data(
         self, common_data, note_list, num_cells_map, borders_map,
-        start_row, start_column=3
+        start_row, start_column=3, progress_bar=None, progress_amount=None
     ):
         print("note_list", note_list)
         print("num_cells_map", num_cells_map)
@@ -206,6 +217,10 @@ class XlsxWriter(XlsxIOBase):
         bef_sound = [None, None]
         mark_idx = 1
         now_measure = 1
+        if progress_bar:
+            progress_tick = (1.0 / (len(note_list) / self.num_measures_in_system)) * progress_amount
+            progress_bar_value = progress_bar["value"]
+
         for system_idx, notes_in_system in enumerate(
             chunked(note_list, self.num_measures_in_system)
         ):
@@ -301,6 +316,12 @@ class XlsxWriter(XlsxIOBase):
                     for (_row1, _col1), (_row2, _col2) in merge_cell_nums:
                         self._merge_cells(_row1, _col1, _row2, _col2)
             now_row += 1
+
+            if progress_bar:
+                progress_bar_value += progress_tick
+                progress_bar["value"] = int(progress_bar_value)
+                progress_bar.update()
+
         # 奏者、楽器を書く
         self._plot_player_and_instrument(
             start_row,
@@ -413,11 +434,7 @@ class XlsxWriter(XlsxIOBase):
         now_col = width_list[idx][0]
 
         # 短縮版の音説明
-        idx = self._get_next_width_idx(width_list, idx, self.color_width)
-        self._merge_cells(now_row, now_col, now_row, width_list[idx - 1][0])
-        self._plot_cell(now_row - 1, now_col, val="C=ド,F=ファ")
-        self._plot_cell(now_row, now_col, fill=self.octave_color_fill[3])
-
+        self._plot_cell(now_row, now_col, val="C=ド,F=ファ")
 
         # 動画&MIDI&編曲者
         idx = 0
@@ -748,7 +765,7 @@ class ThreeLineXlsxWriter(XlsxWriter):
 
     def add_common_data(
         self, common_data, note_list, num_cells_map, borders_map,
-        start_row, start_column=3
+        start_row, start_column=3, progress_bar=None, progress_amount=None
     ):
         print("note_list", note_list)
         print("num_cells_map", num_cells_map)
@@ -758,6 +775,10 @@ class ThreeLineXlsxWriter(XlsxWriter):
         bef_sound = [None, None]
         mark_idx = 1
         now_measure = 1
+        if progress_bar:
+            progress_tick = (1.0 / (len(note_list) / self.num_measures_in_system)) * progress_amount
+            progress_bar_value = progress_bar["value"]
+
         for system_idx, notes_in_system in enumerate(
             chunked(note_list, self.num_measures_in_system)
         ):
@@ -857,6 +878,12 @@ class ThreeLineXlsxWriter(XlsxWriter):
                         for _row in range(_row1, _row2 + 1):
                             self._merge_cells(_row, _col1, _row, _col2)
             now_row += 3
+
+            if progress_bar:
+                progress_bar_value += progress_tick
+                progress_bar["value"] = int(progress_bar_value)
+                progress_bar.update()
+
         # 奏者、楽器を書く
         self._plot_player_and_instrument(
             start_row,
@@ -887,7 +914,6 @@ class ThreeLineXlsxWriter(XlsxWriter):
             [description]
         """
         for column in columns:
-            self._merge_cells(rows[0], column, rows[1], column)
             for row in range(rows[0], rows[1] + 1):
                 column_str = self._convert_column_num(column)
                 self.ws.column_dimensions[column_str].width = self._convert_cm2width(
@@ -901,6 +927,7 @@ class ThreeLineXlsxWriter(XlsxWriter):
                     right=self.medium_side,
                 )
                 self._plot_cell(row, column, val, self.mark_font, self.mark_align, border)
+            self._merge_cells(rows[0], column, rows[1], column)
         return mark_idx + 1
 
     def _plot_beat_border(
@@ -988,7 +1015,7 @@ class FlexibleLineXlsxWriter(ThreeLineXlsxWriter):
 
     def add_common_data(
         self, common_data, note_list, num_cells_map, borders_map,
-        start_row, start_column=3
+        start_row, start_column=3, progress_bar=None, progress_amount=None
     ):
         print("note_list", note_list)
         print("num_cells_map", num_cells_map)
@@ -998,6 +1025,10 @@ class FlexibleLineXlsxWriter(ThreeLineXlsxWriter):
         bef_sound = [None, None]
         mark_idx = 1
         now_measure = 1
+        if progress_bar:
+            progress_tick = (1.0 / (len(note_list) / self.num_measures_in_system)) * progress_amount
+            progress_bar_value = progress_bar["value"]
+
         for system_idx, notes_in_system in enumerate(
             chunked(note_list, self.num_measures_in_system)
         ):
@@ -1098,11 +1129,17 @@ class FlexibleLineXlsxWriter(ThreeLineXlsxWriter):
                     bef_has_note = has_note
                     beat_idx += 1
                 # 伸ばすセルは結合（拍を超えていても結合、小節を挟んだ場合は結合しない）
-                # if len(merge_cell_nums) > 1:
-                #     for (_row1, _col1), (_row2, _col2) in merge_cell_nums:
-                #         for _row in range(_row1, _row2 + 1):
-                #             self._merge_cells(_row, _col1, _row, _col2)
+                if len(merge_cell_nums) > 1:
+                    for (_row1, _col1), (_row2, _col2) in merge_cell_nums:
+                        for _row in range(_row1, _row2 + 1):
+                            self._merge_cells(_row, _col1, _row, _col2)
             now_row += num_rows
+
+            if progress_bar:
+                progress_bar_value += progress_tick
+                progress_bar["value"] = int(progress_bar_value)
+                progress_bar.update()
+
         # 奏者、楽器を書く
         self._plot_player_and_instrument(
             start_row,
