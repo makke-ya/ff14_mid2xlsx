@@ -1,4 +1,9 @@
-# FinalFantasyXIVで活動しているEMS（Elemental-MusicSalon）で定義しているxlsxとmidiとを変換するコンバーター
+# FF14_mid2xlsx
+
+- FinalFantasyXIVで活動している音楽団体EMS（Elemental-MusicSalon）で定義しているxlsxファイルとmidiファイルとを相互に変換可能なコンバーター
+
+## 作成動機
+
 - 主に自分用（もしくはEMSの団員用）に作っています。以下のような困りごとがあったので作成しました。
   - 個人練習の音源がほしい（演奏者として）
     - 練習の過程でゆっくりなテンポから速いテンポに変えたい
@@ -9,17 +14,3 @@
   - midiから配布可能な楽譜（スプシ）を一括で作りたい（楽譜作成者として）
     - 音を確認するために音楽編集ソフトで打ち込み、その後スプシを作っていて2重の手間
     - 既にあるmidi資源の再利用
-
-# TODO
-- [x] xlsx -> midi変換器(CUIベース)
-- [x] プログラム内のコメントをちゃんと書く
-- [x] 四拍子以外、曲中の拍子変化に対応
-- [x] xlsx -> midi部分のGUIの作成(次のステップでexe容量が大きくならないように、tkinterが有力か。容量をみてwxpythonでもいいかも)
-  - [x] wxpythonだと容量が多そうなのでtkinterに決定
-- [ ] print文を止めてloggerによるログ取りに変える
-- [x] pyinstallerによるexe作成
-  - [-] exe作成が無理だった場合はembedded_pythonによる環境ごと配布
-- [x] midi -> xlsx変換器(CUIベース)
-- [x] midi -> xlsx部分のGUIの作成
-  - [ ] exeの容量を減らすアイデアを考える
-- [x] 和音用3行バージョン作成
