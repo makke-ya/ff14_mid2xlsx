@@ -139,7 +139,7 @@ DICT_FOR_PROGRAM = {
     ("Gunshot",	"銃声"): 127,
 }
 DICT_FOR_PROGRAM_onlyFF14 = {
-    # Ver. Patch5.4
+    # Ver. Patch6.4
     ("Orchestral Harp",	"ハープ"): (46, 60),
     ("Acoustic Piano",	"アコースティックピアノ", "グランドピアノ"): (0, 72),
     ("Acoustic Guitar (steel)",	"アコースティックギター（スチール弦）", "スチールギター"): (25, 48),

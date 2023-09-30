@@ -190,7 +190,7 @@ DICT_FOR_PROGRAM = {
     ("Gunshot",	"銃声"): 127,
 }
 DICT_FOR_PROGRAM_onlyFF14 = {
-    # Ver. Patch5.4
+    # Ver. Patch6.4
     ("Orchestral Harp",	"ハープ"): (46, 60),
     ("Acoustic Piano",	"アコースティックピアノ", "グランドピアノ"): (0, 72),
     ("Acoustic Guitar (steel)",	"アコースティックギター（スチール弦）", "スチールギター"): (25, 48),
@@ -221,6 +221,11 @@ DICT_FOR_PROGRAM_onlyFF14 = {
     ("Viola",	"ヴィオラ"): (41, 60),
     ("Cello",	"チェロ"): (42, 48),
     ("Double bass",	"コントラバス"): (43, 36),
+
+    ("Overdriven Guitar",	"オーバードライブギター"): (29, 48),
+    ("Electric Guitar (clean)",	"クリーンギター"): (27, 48),
+    ("Electric Guitar (muted)",	"ミュートギター"): (28, 48),
+    ("Distortion Guitar",	"ディストーションギター"): (30, 36),
 }
 DICT_FOR_QUANTIZED_UNIT_TIMES = {
     (3, 48): 30,  # 64分音符
