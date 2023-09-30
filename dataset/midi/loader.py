@@ -1,8 +1,10 @@
 # coding: utf-8
+import os
 from math import ceil
 from copy import deepcopy
 from mido import Message, MetaMessage, MidiFile, MidiTrack, bpm2tempo, tempo2bpm
 from .base import MidiIOBase
+from .reviser import MidiReviser
 from dataset.common_sound import CommonSoundData
 from ._static_data import (
     DICT_FOR_QUANTIZED_UNIT_TIMES,
@@ -21,7 +23,14 @@ class MidiLoader(MidiIOBase):
         filename : str, optional
             ファイル名, by default None
         """
-        self.mid = MidiFile(filename=filename)
+        self.reviser = MidiReviser(filename)
+        print("output:", self.reviser.is_revised)
+        if self.reviser.is_revised:
+            base, ext = os.path.splitext(filename)
+            filename = base + "_revised" + ext
+            self.reviser.fwrite_revised_midi(filename)
+        self.filename = filename
+        self.mid = MidiFile(filename=filename, debug=True)
         self.ticks_per_beat = self.mid.ticks_per_beat
         self.tempo = self.get_tempo()
         if self.tempo is None:  # テンポ設定が無い場合は60
